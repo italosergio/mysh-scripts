@@ -11,6 +11,20 @@ sudo apt update && sudo apt install -y \
     libreadline-dev libbz2-dev \
     libsqlite3-dev
 
+# Remove cmdtest caso esteja instalado
+if dpkg -l | grep -q cmdtest; then
+    echo -e "\e[34mRemovendo cmdtest...\e[0m"
+    sudo apt remove -y cmdtest
+fi
+
+# Adiciona o repositório oficial do Yarn
+echo -e "\e[34mAdicionando repositório do Yarn...\e[0m"
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo tee /etc/apt/trusted.gpg.d/yarn.gpg > /dev/null
+echo "deb https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+
+# Atualiza pacotes e instala o Yarn corretamente
+sudo apt update && sudo apt install -y yarn
+
 # Define a versão do asdf a ser instalada
 ASDF_VERSION="v0.14.0"
 
@@ -42,6 +56,41 @@ fi
 echo -e "\e[34mRecarregando shell...\e[0m"
 source "$SHELL_CONFIG"
 
+# Instala plugins do asdf, caso não estejam instalados
+echo -e "\e[34mVerificando e instalando plugins...\e[0m"
+
+# Exemplo de plugin: Node.js
+if ! asdf plugin-list | grep -q 'nodejs'; then
+    echo -e "\e[34mInstalando plugin Node.js...\e[0m"
+    asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+    echo -e "\e[34mPlugin Node.js instalado com sucesso!\e[0m"
+fi
+
+# Instala versão do Node.js (exemplo com a versão 16.0.0)
+echo -e "\e[34mInstalando a versão do Node.js...\e[0m"
+asdf install nodejs 16.0.0
+
+# Instala o Yarn com o asdf
+if ! asdf plugin-list | grep -q 'yarn'; then
+    echo -e "\e[34mInstalando plugin Yarn...\e[0m"
+    asdf plugin-add yarn https://github.com/asdf-community/asdf-yarn.git
+    echo -e "\e[34mPlugin Yarn instalado com sucesso!\e[0m"
+fi
+
+# Instala a versão do Yarn
+echo -e "\e[34mInstalando a versão do Yarn...\e[0m"
+asdf install yarn latest
+
+# Define as versões globais
+echo -e "\e[34mDefinindo versões globais...\e[0m"
+asdf global nodejs 16.0.0
+asdf global yarn latest
+
 # Testa a instalação
 echo -e "\e[34mVersão do asdf instalada:\e[0m"
 asdf --version
+echo -e "\e[34mVersão do Node.js instalada:\e[0m"
+node --version
+echo -e "\e[34mVersão do Yarn instalada:\e[0m"
+yarn --version
+
